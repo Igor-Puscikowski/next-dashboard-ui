@@ -3,21 +3,10 @@ import TableSearch from "@/components/TableSearch";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import Link from "next/link";
-import { role, studentsData } from "@/lib/data";
+import { role } from "@/lib/data";
 import FormModal from "@/components/FormModal";
-import { Student } from "@prisma/client";
-
-// type Student = {
-//   id: number;
-//   studentId: string;
-//   name: string;
-//   email?: string;
-//   photo: string;
-//   phone?: string;
-//   grade: number;
-//   class: string;
-//   address: string;
-// };
+import { Grade, Prisma, PrismaClient, Student } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 const columns = [
   {
@@ -50,7 +39,7 @@ const columns = [
   },
 ];
 
-const renderRow = (item: Student) => (
+const renderRow = (item: Student & { grade: Grade }) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
@@ -69,7 +58,8 @@ const renderRow = (item: Student) => (
       </div>
     </td>
     <td className="hidden md:table-cell">{item.id}</td>
-    <td className="hidden md:table-cell">{item.grade}</td>
+    {/* relacja z grade level to nasza ocena wejdz sobie do schema grade i bedzie to jasne  */}
+    <td className="hidden md:table-cell">{item.grade.level}</td>
     <td className="hidden md:table-cell">{item.phone}</td>
     <td className="hidden md:table-cell">{item.address}</td>
     <td>
@@ -88,6 +78,12 @@ const renderRow = (item: Student) => (
 );
 
 const StudentListPage = async () => {
+  const studentsData = await prisma.student.findMany({
+    include: {
+      grade: true,
+    },
+  });
+
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
